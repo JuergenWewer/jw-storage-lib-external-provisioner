@@ -1,0 +1,9 @@
+language: go
+go_import_path: github.com/JuergenWewer/jw-storage-lib-external-provisioner
+go:
+  - 1.15
+services: docker
+script:
+  - make verify
+  - make test
+  - ./test/e2e/test.sh
