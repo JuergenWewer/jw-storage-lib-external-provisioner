@@ -1,18 +1,11 @@
-This directory mirrors the source code via symlinks.
-This makes it possible to vendor v5.x releases of
-sig-storage-lib-external-provisioner with `dep` versions that do not
-support semantic imports. Support for that is currently
-[pending in dep](https://github.com/golang/dep/pull/1963).
-
-If users of dep have enabled pruning, they must disable if
-for sig-storage-lib-external-provisioner in their Gopk.toml, like this:
-
-```toml
-[prune]
-  go-tests = true
-  unused-packages = true
-
-  [[prune.project]]
-    name = "github.com/JuergenWewer/jw-storage-lib-external-provisioner"
-    unused-packages = false
-```
+# to deploy a new version to the repository:
+# we don't build an executable - we just push the source
+# the make just verifies
+make
+git checkout -b v0.0.2
+git add .
+git commit -m "revision v0.0.2"
+git push
+git push --set-upstream origin v0.0.2
+git checkout master
+git merge v0.0.2
