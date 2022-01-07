@@ -31,5 +31,3 @@ test: dep
 clean:
 	rm -rf ./test/e2e/kubernetes
 
-controller:
-	CGO_ENABLED=0 go build -a -ldflags '-extldflags "-static"' -o controller1 .

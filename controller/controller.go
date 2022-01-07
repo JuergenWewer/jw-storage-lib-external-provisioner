@@ -29,6 +29,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/JuergenWewer/csi-raid-controller"
+	"github.com/JuergenWewer/jw-storage-lib-external-provisioner/controller/metrics"
+	"github.com/JuergenWewer/jw-storage-lib-external-provisioner/util"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"golang.org/x/time/rate"
@@ -53,8 +56,6 @@ import (
 	ref "k8s.io/client-go/tools/reference"
 	"k8s.io/client-go/util/workqueue"
 	klog "k8s.io/klog/v2"
-	"github.com/JuergenWewer/jw-storage-lib-external-provisioner/controller/metrics"
-	"github.com/JuergenWewer/jw-storage-lib-external-provisioner/util"
 )
 
 // annClass annotation represents the storage class associated with a resource:
@@ -227,6 +228,9 @@ const (
 )
 
 var errRuntime = fmt.Errorf("cannot call option functions after controller has Run")
+
+var Source string
+var Target string
 
 // ResyncPeriod is how often the controller relists PVCs, PVs, & storage
 // classes. OnUpdate will be called even if nothing has changed, meaning failed
@@ -615,6 +619,8 @@ func (ctrl *ProvisionController) HasRun() bool {
 	return ctrl.hasRun
 }
 
+
+
 // NewProvisionController creates a new provision controller using
 // the given configuration parameters and with private (non-shared) informers.
 func NewProvisionController(
@@ -831,8 +837,54 @@ func (ctrl *ProvisionController) forgetVolume(obj interface{}) {
 
 // Run starts all of this controller's control loops
 func (ctrl *ProvisionController) Run(ctx context.Context) {
+
+	storageClassList, err := ctrl.client.StorageV1().StorageClasses().List(ctx,metav1.ListOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Printf("my name: %s \n", ctrl.provisionerName)
+	//fmt.Printf("storageClasses: %d \n", len(storageClassList.Items))
+	for _, storageClass := range storageClassList.Items {
+		// index is the index where we are
+		// element is the element from someSlice for where we are
+		//fmt.Printf("storageClass: %d provisioner: %s storageClass: %s \n", index, storageClass.Provisioner, storageClass.ObjectMeta.Name )
+		if ctrl.provisionerName == storageClass.Provisioner {
+			//storageClass for the actual provisioner
+			persistentVolumeList, err := ctrl.client.CoreV1().PersistentVolumes().List(context.TODO(), metav1.ListOptions{})
+			if err != nil {
+				panic(err.Error())
+			}
+			for index, persistentVolume := range persistentVolumeList.Items {
+				fmt.Printf("persistentVolume: %d Name: %s StorageClassName: %s\n", index, persistentVolume.Name, persistentVolume.Spec.StorageClassName)
+				if persistentVolume.Spec.StorageClassName == storageClass.ObjectMeta.Name {
+					if persistentVolume.Spec.NFS != nil {
+						//storage type NFS
+						Source = ctrl.provisioner.GetSource()
+						Target = ctrl.provisioner.GetTarget()
+						fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Spec.NFS.Path)
+						//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
+						go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Spec.NFS.Path)
+					}
+				}
+			}
+		}
+	}
+	pods, err := ctrl.client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		panic(err.Error())
+	}
+	klog.Infof("blob provisioner: There are %d pods in the cluster\n", len(pods.Items))
+	pvs, err := ctrl.client.CoreV1().PersistentVolumes().List(context.TODO(), metav1.ListOptions{})
+	klog.Infof("blob provisioner: There are %d persistentVolumes in the cluster\n", len(pvs.Items))
+
+	Source = ctrl.provisioner.GetSource()
+	Target = ctrl.provisioner.GetTarget()
+	//remotePath = ctrl.provisioner.GetRemote()
+	klog.Infof("blob provisioner Source: %s Target: %s", Source, Target)
+
+
 	run := func(ctx context.Context) {
-		klog.Infof("Starting provisioner controller %s!", ctrl.component)
+		klog.Infof("Starting blob provisioner controller %s!", ctrl.component)
 		defer utilruntime.HandleCrash()
 		defer ctrl.claimQueue.ShutDown()
 		defer ctrl.volumeQueue.ShutDown()
@@ -1454,6 +1506,7 @@ func (ctrl *ProvisionController) provisionClaimOperation(ctx context.Context, cl
 	}
 
 	klog.Info(logOperation(operation, "succeeded"))
+	go csiraidcontroller.CSIsyncNew(ctx, Source, Target, pvName, claim.Namespace, claim.Name)
 
 	if err := ctrl.volumeStore.StoreVolume(claim, volume); err != nil {
 		return ProvisioningFinished, err
@@ -1485,6 +1538,7 @@ func (ctrl *ProvisionController) deleteVolumeOperation(ctx context.Context, volu
 	}
 
 	klog.Info(logOperation(operation, "volume deleted"))
+	go csiraidcontroller.CSIdelete(ctx, Source, Target, volume)
 
 	// Delete the volume
 	if err = ctrl.client.CoreV1().PersistentVolumes().Delete(ctx, volume.Name, metav1.DeleteOptions{}); err != nil {
