@@ -862,9 +862,15 @@ func (ctrl *ProvisionController) Run(ctx context.Context) {
 						fmt.Printf("ctrl.provisioner: %s\n", ctrl.provisioner)
 						Source = ctrl.provisioner.GetSource()
 						Target = ctrl.provisioner.GetTarget()
-						fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Spec.NFS.Path)
-						//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
-						go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Spec.NFS.Path)
+						if persistentVolume.Spec.NFS != nil {
+							fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Spec.NFS.Path)
+							//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
+							go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Spec.NFS.Path)
+						} else {
+							fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Name)
+							//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
+							go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Name)
+						}
 					//}
 				}
 			}
