@@ -847,7 +847,7 @@ func (ctrl *ProvisionController) Run(ctx context.Context) {
 	for _, storageClass := range storageClassList.Items {
 		// index is the index where we are
 		// element is the element from someSlice for where we are
-		//fmt.Printf("storageClass: %d provisioner: %s storageClass: %s \n", index, storageClass.Provisioner, storageClass.ObjectMeta.Name )
+		fmt.Printf("storageClass: %s provisioner: %s \n",  storageClass.ObjectMeta.Name, storageClass.Provisioner )
 		if ctrl.provisionerName == storageClass.Provisioner {
 			//storageClass for the actual provisioner
 			persistentVolumeList, err := ctrl.client.CoreV1().PersistentVolumes().List(context.TODO(), metav1.ListOptions{})
@@ -857,14 +857,14 @@ func (ctrl *ProvisionController) Run(ctx context.Context) {
 			for index, persistentVolume := range persistentVolumeList.Items {
 				fmt.Printf("persistentVolume: %d Name: %s StorageClassName: %s\n", index, persistentVolume.Name, persistentVolume.Spec.StorageClassName)
 				if persistentVolume.Spec.StorageClassName == storageClass.ObjectMeta.Name {
-					if persistentVolume.Spec.NFS != nil {
+					//if persistentVolume.Spec.NFS != nil {
 						//storage type NFS
 						Source = ctrl.provisioner.GetSource()
 						Target = ctrl.provisioner.GetTarget()
 						fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Spec.NFS.Path)
 						//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
 						go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Spec.NFS.Path)
-					}
+					//}
 				}
 			}
 		}
