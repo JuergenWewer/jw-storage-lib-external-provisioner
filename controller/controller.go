@@ -859,6 +859,7 @@ func (ctrl *ProvisionController) Run(ctx context.Context) {
 				if persistentVolume.Spec.StorageClassName == storageClass.ObjectMeta.Name {
 					//if persistentVolume.Spec.NFS != nil {
 						//storage type NFS
+						fmt.Printf("ctrl.provisioner: %s\n", ctrl.provisioner)
 						Source = ctrl.provisioner.GetSource()
 						Target = ctrl.provisioner.GetTarget()
 						fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Spec.NFS.Path)
