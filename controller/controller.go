@@ -857,21 +857,17 @@ func (ctrl *ProvisionController) Run(ctx context.Context) {
 			for index, persistentVolume := range persistentVolumeList.Items {
 				fmt.Printf("persistentVolume: %d Name: %s StorageClassName: %s\n", index, persistentVolume.Name, persistentVolume.Spec.StorageClassName)
 				if persistentVolume.Spec.StorageClassName == storageClass.ObjectMeta.Name {
-					//if persistentVolume.Spec.NFS != nil {
-						//storage type NFS
-						fmt.Printf("ctrl.provisioner: %s\n", ctrl.provisioner)
-						Source = ctrl.provisioner.GetSource()
-						Target = ctrl.provisioner.GetTarget()
-						if persistentVolume.Spec.NFS != nil {
-							fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Spec.NFS.Path)
-							//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
-							go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Spec.NFS.Path)
-						} else {
-							fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Name)
-							//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
-							go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Name)
-						}
-					//}
+					Source = ctrl.provisioner.GetSource()
+					Target = ctrl.provisioner.GetTarget()
+					if persistentVolume.Spec.NFS != nil {
+						fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Spec.NFS.Path)
+						//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
+						go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Spec.NFS.Path)
+					} else {
+						fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Name)
+						//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
+						go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Name)
+					}
 				}
 			}
 		}
