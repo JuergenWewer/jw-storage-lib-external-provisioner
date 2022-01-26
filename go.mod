@@ -3,7 +3,7 @@ module github.com/JuergenWewer/jw-storage-lib-external-provisioner
 go 1.15
 
 require (
-	github.com/JuergenWewer/csi-raid-controller v0.0.38
+	github.com/JuergenWewer/csi-raid-controller v0.0.39
 	github.com/miekg/dns v1.1.42
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/client_model v0.2.0
