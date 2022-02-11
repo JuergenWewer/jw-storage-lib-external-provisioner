@@ -231,6 +231,7 @@ var errRuntime = fmt.Errorf("cannot call option functions after controller has R
 
 var Source string
 var Target string
+var Active bool
 
 // ResyncPeriod is how often the controller relists PVCs, PVs, & storage
 // classes. OnUpdate will be called even if nothing has changed, meaning failed
@@ -859,14 +860,15 @@ func (ctrl *ProvisionController) Run(ctx context.Context) {
 				if persistentVolume.Spec.StorageClassName == storageClass.ObjectMeta.Name {
 					Source = ctrl.provisioner.GetSource()
 					Target = ctrl.provisioner.GetTarget()
+					Active = ctrl.provisioner.GetActive()
 					if persistentVolume.Spec.NFS != nil {
 						fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Spec.NFS.Path)
 						//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
-						go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Spec.NFS.Path)
+						go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Spec.NFS.Path,Active)
 					} else {
 						fmt.Printf("start sync - persistentVolume: %d path: %s\n", index, persistentVolume.Name)
 						//now we should start sync - persistentVolume: 5 path: /mnt/optimal/nfs-provisioner/default-test-csi-claim-pvc-3913b8ca-d2f1-472a-8082-16b6e4d5b175
-						go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Name)
+						go csiraidcontroller.CSIsyncVolume(ctx, Source, Target, persistentVolume.Name, Active)
 					}
 				}
 			}
@@ -882,8 +884,9 @@ func (ctrl *ProvisionController) Run(ctx context.Context) {
 
 	Source = ctrl.provisioner.GetSource()
 	Target = ctrl.provisioner.GetTarget()
+	Active = ctrl.provisioner.GetActive()
 	//remotePath = ctrl.provisioner.GetRemote()
-	klog.Infof("blob provisioner Source: %s Target: %s", Source, Target)
+	klog.Infof("blob provisioner Source: %s Target: %s Active: %b", Source, Target, Active)
 
 
 	run := func(ctx context.Context) {
@@ -1509,7 +1512,7 @@ func (ctrl *ProvisionController) provisionClaimOperation(ctx context.Context, cl
 	}
 
 	klog.Info(logOperation(operation, "succeeded"))
-	go csiraidcontroller.CSIsyncNew(ctx, Source, Target, pvName, claim.Namespace, claim.Name)
+	go csiraidcontroller.CSIsyncNew(ctx, Source, Target, pvName, claim.Namespace, claim.Name, Active)
 
 	if err := ctrl.volumeStore.StoreVolume(claim, volume); err != nil {
 		return ProvisioningFinished, err

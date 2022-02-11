@@ -85,8 +85,8 @@ github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c h1:/IBSNwUN8+eKzU
 github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c/go.mod h1:chxPXzSsl7ZWRAuOIE23GDNzjWuZquvFlgA8xmpunjU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/JuergenWewer/csi-raid-controller v0.0.39 h1:QeE5ijLOKtk7YG0WvgGru7fcw5FboSIQgGLaRkHQhQg=
-github.com/JuergenWewer/csi-raid-controller v0.0.39/go.mod h1:RxI4oqmnXI96ElBKpK9h6PYE+DtkXrHPpM1ULQvc7a8=
+github.com/JuergenWewer/csi-raid-controller v0.0.40 h1:NsuSvBbYBfGw4TQk5VTf93Db9ocn5VLpdv81frbKroI=
+github.com/JuergenWewer/csi-raid-controller v0.0.40/go.mod h1:RxI4oqmnXI96ElBKpK9h6PYE+DtkXrHPpM1ULQvc7a8=
 github.com/Julusian/godocdown v0.0.0-20170816220326-6d19f8ff2df8/go.mod h1:INZr5t32rG59/5xeltqoCJoNY7e5x/3xoY9WSWVWg74=
 github.com/Microsoft/go-winio v0.5.0 h1:Elr9Wn+sGKPlkaBvwu4mTrxtmOp3F3yV9qhaHbXGjwU=
 github.com/Microsoft/go-winio v0.5.0/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=

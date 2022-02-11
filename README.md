@@ -3,10 +3,10 @@
 # the make just verifies
 enter the new version of csi-raid-controller in go.mod
 make
-git checkout -b v0.0.8
+git checkout -b v0.0.9
 git add .
-git commit -m "revision v0.0.8"
-git push --set-upstream origin v0.0.8
+git commit -m "revision v0.0.9"
+git push --set-upstream origin v0.0.9
 git checkout master
-git merge v0.0.8
+git merge v0.0.9
 git push
